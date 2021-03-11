@@ -190,6 +190,9 @@ function handleText(message, replyToken, source) {
       if (!aki.gameStarted) {
         return replyText(replyToken, 'Please start the game first.');
       }
+      if (aki.gameEnded) {
+        return replyText(replyToken, 'Type `start` again to start a new game.');
+      }
 
       return aki.back().then(() =>
         client.replyMessage(replyToken, [
@@ -224,6 +227,9 @@ function handleText(message, replyToken, source) {
       }
 
     default:
+      if (aki.gameStarted) {
+        return replyText(replyToken, 'Akinator is asking!');
+      }
       return replyText(replyToken, 'Type `start` to start the game.');
   }
 }
