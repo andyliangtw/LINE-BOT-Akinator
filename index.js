@@ -14,7 +14,7 @@ const aki = new Aki('en');
 
 const app = express();
 
-app.use('/static', express.static('static'));
+app.use('/images', express.static('images'));
 
 app.get('/callback', (req, res) =>
   res.end(`I'm listening. Please access with POST.`),
@@ -103,7 +103,7 @@ function handleText(message, replyToken, source) {
 
   const optionObj = {
     type: 'imagemap',
-    baseUrl: `${baseURL}/static/images/options`,
+    baseUrl: `${baseURL}/images/options`,
     altText: 'Akinator options',
     baseSize: { width: 1040, height: 1040 },
     actions: Object.keys(optionToNum).map((option, i) => {
@@ -121,14 +121,14 @@ function handleText(message, replyToken, source) {
         return client.replyMessage(replyToken, [
           {
             type: 'text',
-            text: `Q.${aki.currentStep + 1}:\n${
+            text: `Question ${aki.currentStep + 1}:\n${
               `*${aki.question}*` || 'Akinator has no question to you.'
             }`,
           },
           optionObj,
           {
             type: 'text',
-            text: 'Or type *back* to back to previous question.',
+            text: 'Or type `back` to back to previous question.',
           },
         ]);
       });
@@ -142,7 +142,7 @@ function handleText(message, replyToken, source) {
         return replyText(replyToken, 'Please start the game first.');
       }
       if (aki.gameEnded) {
-        return replyText(replyToken, 'Type *start* again to start a new game.');
+        return replyText(replyToken, 'Type `start` again to start a new game.');
       }
 
       return aki.step(optionToNum[message.text]).then(() => {
@@ -159,15 +159,13 @@ function handleText(message, replyToken, source) {
               {
                 type: 'image',
                 originalContentUrl:
-                  answer.absolute_picture_path ||
-                  `${baseURL}/static/images/icon.jpg`,
+                  answer.absolute_picture_path || `${baseURL}/images/icon.jpg`,
                 previewImageUrl:
-                  answer.absolute_picture_path ||
-                  `${baseURL}/static/images/icon.jpg`,
+                  answer.absolute_picture_path || `${baseURL}/images/icon.jpg`,
               },
               {
                 type: 'text',
-                text: 'Type *start* again to start a new game.',
+                text: 'Type `start` again to start a new game.',
               },
             ]);
           });
@@ -176,14 +174,14 @@ function handleText(message, replyToken, source) {
         return client.replyMessage(replyToken, [
           {
             type: 'text',
-            text: `Q.${aki.currentStep + 1}:\n${
+            text: `Question ${aki.currentStep + 1}:\n${
               `*${aki.question}*` || 'Akinator has no question to you.'
             }`,
           },
           optionObj,
           {
             type: 'text',
-            text: 'Or type *back* to back to previous question.',
+            text: 'Or type `back` to back to previous question.',
           },
         ]);
       });
@@ -197,14 +195,14 @@ function handleText(message, replyToken, source) {
         client.replyMessage(replyToken, [
           {
             type: 'text',
-            text: `Q.${aki.currentStep + 1}:\n${
+            text: `Question ${aki.currentStep + 1}:\n${
               `*${aki.question}*` || 'Akinator has no question to you.'
             }`,
           },
           optionObj,
           {
             type: 'text',
-            text: 'Or type *back* to back to previous question.',
+            text: 'Or type `back` to back to previous question.',
           },
         ]),
       );
@@ -226,7 +224,7 @@ function handleText(message, replyToken, source) {
       }
 
     default:
-      return replyText(replyToken, 'Type *start* to start the game.');
+      return replyText(replyToken, 'Type `start` to start the game.');
   }
 }
 
