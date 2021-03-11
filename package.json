@@ -1,6 +1,6 @@
 {
-  "name": "line-bot-self_promotion",
-  "version": "0.0.1",
+  "name": "line-bot-akinator",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "dependencies": {
@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andyliangtw/LINE-BOT-self_promotion.git"
+    "url": "git+https://github.com/andyliangtw/LINE-BOT-Akinator.git"
   },
   "author": "andyliangtw",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/andyliangtw/LINE-BOT-self_promotion/issues"
+    "url": "https://github.com/andyliangtw/LINE-BOT-Akinator/issues"
   },
-  "homepage": "https://github.com/andyliangtw/LINE-BOT-self_promotion#readme"
+  "homepage": "https://github.com/andyliangtw/LINE-BOT-Akinator#readme"
 }
