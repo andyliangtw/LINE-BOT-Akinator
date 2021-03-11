@@ -2,14 +2,15 @@
 
 const line = require('@line/bot-sdk');
 const express = require('express');
-const { Aki } = require('aki-api');
+const { Aki } = require('./aki-api');
 
 const config = {
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
   channelSecret: process.env.CHANNEL_SECRET,
 };
-let baseURL = process.env.BASE_URL;
+const baseURL = process.env.BASE_URL;
 const client = new line.Client(config);
+const aki = new Aki('en');
 
 const app = express();
 
@@ -67,8 +68,7 @@ function handleEvent(event) {
       const { message } = event;
       switch (message.type) {
         case 'text':
-          const aki = new Aki('en');
-          return handleText(message, replyToken, event.source, aki);
+          return handleText(message, replyToken, event.source);
         case 'sticker':
           return handleSticker(message, replyToken);
         default:
@@ -92,7 +92,7 @@ function handleEvent(event) {
   }
 }
 
-function handleText(message, replyToken, source, aki) {
+function handleText(message, replyToken, source) {
   const optionToNum = {
     Yes: 0,
     No: 1,
@@ -121,11 +121,15 @@ function handleText(message, replyToken, source, aki) {
         return client.replyMessage(replyToken, [
           {
             type: 'text',
-            text: `Question No.${aki.currentStep + 1}:\n${
-              aki.question || 'Akinator has no question for you'
+            text: `Q.${aki.currentStep + 1}:\n${
+              `*${aki.question}*` || 'Akinator has no question to you.'
             }`,
           },
           optionObj,
+          {
+            type: 'text',
+            text: 'Or type *back* to back to previous question.',
+          },
         ]);
       });
 
@@ -134,11 +138,24 @@ function handleText(message, replyToken, source, aki) {
     case "Don't know":
     case 'Probably':
     case 'Probably not':
+      if (!aki.gameStarted) {
+        return replyText(replyToken, 'Please start the game first.');
+      }
+      if (aki.gameEnded) {
+        return replyText(replyToken, 'Type *start* again to start a new game.');
+      }
+
       return aki.step(optionToNum[message.text]).then(() => {
-        if (aki.progress >= 70 || aki.currentStep >= 20) {
+        if (aki.progress >= 80 || aki.currentStep >= 50) {
           return aki.win().then(() => {
             const answer = aki.answers[0];
             return client.replyMessage(replyToken, [
+              {
+                type: 'text',
+                text:
+                  `I think of *${answer.name}* (${answer.description}).` ||
+                  'Akinator went wrong...',
+              },
               {
                 type: 'image',
                 originalContentUrl:
@@ -150,33 +167,45 @@ function handleText(message, replyToken, source, aki) {
               },
               {
                 type: 'text',
-                text: answer.name || 'Akinator went wrong...',
+                text: 'Type *start* again to start a new game.',
               },
             ]);
           });
-        } else {
-          return client.replyMessage(replyToken, [
-            {
-              type: 'text',
-              text: `Question No.${aki.currentStep + 1}:\n${
-                aki.question || 'Akinator has no question for you'
-              }`,
-            },
-            optionObj,
-          ]);
         }
+
+        return client.replyMessage(replyToken, [
+          {
+            type: 'text',
+            text: `Q.${aki.currentStep + 1}:\n${
+              `*${aki.question}*` || 'Akinator has no question to you.'
+            }`,
+          },
+          optionObj,
+          {
+            type: 'text',
+            text: 'Or type *back* to back to previous question.',
+          },
+        ]);
       });
 
-    case 'Back':
+    case 'back':
+      if (!aki.gameStarted) {
+        return replyText(replyToken, 'Please start the game first.');
+      }
+
       return aki.back().then(() =>
         client.replyMessage(replyToken, [
           {
             type: 'text',
-            text: `Question No.${aki.currentStep + 1}:\n${
-              aki.question || 'Akinator has no question for you'
+            text: `Q.${aki.currentStep + 1}:\n${
+              `*${aki.question}*` || 'Akinator has no question to you.'
             }`,
           },
           optionObj,
+          {
+            type: 'text',
+            text: 'Or type *back* to back to previous question.',
+          },
         ]),
       );
 
@@ -197,7 +226,7 @@ function handleText(message, replyToken, source, aki) {
       }
 
     default:
-      return replyText(replyToken, "Even Akinator don't know your heart...");
+      return replyText(replyToken, 'Type *start* to start the game.');
   }
 }
 
