@@ -35,6 +35,7 @@ After several questions, Akinator will tell you which character you might think 
      - If not, you can tell Akinator who you thought to help improve Akinator better!
 2. Change language of the BOT as well as the Akinator
 3. Play in 'Child Mode'
+4. Add warning and confirmation before restarting the game.
 
 ## References
 
