@@ -122,49 +122,72 @@ function handleText(message, replyToken, source) {
   switch (message.text.trim()) {
     case 'start':
       if (!akis[userId]) {
-        akis[userId] = new Aki('en');
+        try {
+          akis[userId] = new Aki('en');
+        } catch (err) {
+          return client.replyText(
+            replyToken,
+            'Sorry something went wrong... please tell me again.',
+          );
+        }
       }
-      return akis[userId].start().then(() => {
-        return client.replyMessage(replyToken, [
-          {
-            type: 'text',
-            text:
-              'Think about a real or fictional character.\nI will try to guess who it is.',
-          },
-          {
-            type: 'text',
-            text: `Question ${akis[userId].currentStep + 1}:\n${
-              `${akis[userId].question}` || 'Akinator went wrong...'
-            }`,
-          },
-          optionObj,
-          {
-            type: 'text',
-            text: 'Or type `back` to back to previous question.',
-          },
-        ]);
-      });
+      return akis[userId]
+        .start()
+        .then(() => {
+          return client.replyMessage(replyToken, [
+            {
+              type: 'text',
+              text:
+                'Think about a real or fictional character.\nI will try to guess who it is.',
+            },
+            {
+              type: 'text',
+              text: `Question ${akis[userId].currentStep + 1}:\n${
+                `${akis[userId].question}` || 'Akinator went wrong...'
+              }`,
+            },
+            optionObj,
+            {
+              type: 'text',
+              text: 'Or type `back` to back to previous question.',
+            },
+          ]);
+        })
+        .catch((err) => {
+          return replyText(
+            replyToken,
+            'Sorry something went wrong... please tell me again.',
+          );
+        });
 
     case 'back':
       if (!akis[userId]?.gameStarted) {
         return replyText(replyToken, 'Please start the game first.');
       }
 
-      return akis[userId].back().then(() =>
-        client.replyMessage(replyToken, [
-          {
-            type: 'text',
-            text: `(Back) Question ${akis[userId].currentStep + 1}:\n${
-              `${akis[userId].question}` || 'Akinator went wrong...'
-            }`,
-          },
-          optionObj,
-          {
-            type: 'text',
-            text: 'Or type `back` to back to previous question.',
-          },
-        ]),
-      );
+      return akis[userId]
+        .back()
+        .then(() =>
+          client.replyMessage(replyToken, [
+            {
+              type: 'text',
+              text: `(Back) Question ${akis[userId].currentStep + 1}:\n${
+                `${akis[userId].question}` || 'Akinator went wrong...'
+              }`,
+            },
+            optionObj,
+            {
+              type: 'text',
+              text: 'Or type `back` to back to previous question.',
+            },
+          ]),
+        )
+        .catch((err) => {
+          return replyText(
+            replyToken,
+            'Sorry something went wrong... please tell me again.',
+          );
+        });
 
     case 'Yes':
     case 'No':
@@ -184,46 +207,64 @@ function handleText(message, replyToken, source) {
         );
       }
 
-      return akis[userId].step(optionToNum[message.text]).then(() => {
-        if (akis[userId].progress >= 80 || akis[userId].currentStep >= 50) {
-          return akis[userId].win().then(() => {
-            const answer = akis[userId].answers[0];
-            return client.replyMessage(replyToken, [
-              {
-                type: 'text',
-                text:
-                  `I think of *${answer.name}* (${answer.description}).` ||
-                  'Akinator went wrong...',
-              },
-              {
-                type: 'image',
-                originalContentUrl:
-                  answer.absolute_picture_path || `${baseURL}/images/icon.jpg`,
-                previewImageUrl:
-                  answer.absolute_picture_path || `${baseURL}/images/icon.jpg`,
-              },
-              {
-                type: 'text',
-                text: 'Type `start` again to start a new game.',
-              },
-            ]);
-          });
-        }
+      return akis[userId]
+        .step(optionToNum[message.text])
+        .then(() => {
+          if (akis[userId].progress >= 80 || akis[userId].currentStep >= 50) {
+            return akis[userId]
+              .win()
+              .then(() => {
+                const answer = akis[userId].answers[0];
+                return client.replyMessage(replyToken, [
+                  {
+                    type: 'text',
+                    text:
+                      `I think of *${answer.name}* (${answer.description}).` ||
+                      'Akinator went wrong...',
+                  },
+                  {
+                    type: 'image',
+                    originalContentUrl:
+                      answer.absolute_picture_path ||
+                      `${baseURL}/images/icon.jpg`,
+                    previewImageUrl:
+                      answer.absolute_picture_path ||
+                      `${baseURL}/images/icon.jpg`,
+                  },
+                  {
+                    type: 'text',
+                    text: 'Type `start` again to start a new game.',
+                  },
+                ]);
+              })
+              .catch((err) => {
+                return replyText(
+                  replyToken,
+                  'Sorry something went wrong... please tell me again.',
+                );
+              });
+          }
 
-        return client.replyMessage(replyToken, [
-          {
-            type: 'text',
-            text: `Question ${akis[userId].currentStep + 1}:\n${
-              `${akis[userId].question}` || 'Akinator went wrong...'
-            }`,
-          },
-          optionObj,
-          {
-            type: 'text',
-            text: 'Or type `back` to back to previous question.',
-          },
-        ]);
-      });
+          return client.replyMessage(replyToken, [
+            {
+              type: 'text',
+              text: `Question ${akis[userId].currentStep + 1}:\n${
+                `${akis[userId].question}` || 'Akinator went wrong...'
+              }`,
+            },
+            optionObj,
+            {
+              type: 'text',
+              text: 'Or type `back` to back to previous question.',
+            },
+          ]);
+        })
+        .catch((err) => {
+          return replyText(
+            replyToken,
+            'Sorry something went wrong... please tell me again.',
+          );
+        });
 
     case 'bye':
       switch (source.type) {
