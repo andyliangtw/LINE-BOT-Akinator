@@ -10,7 +10,7 @@ const config = {
 };
 const baseURL = process.env.BASE_URL;
 const client = new line.Client(config);
-const aki = new Aki('en');
+const akis = {};
 
 const app = express();
 
@@ -96,6 +96,7 @@ function handleEvent(event) {
 }
 
 function handleText(message, replyToken, source) {
+  const { userId } = source;
   const optionToNum = {
     Yes: 0,
     No: 1,
@@ -120,7 +121,10 @@ function handleText(message, replyToken, source) {
 
   switch (message.text.trim()) {
     case 'start':
-      return aki.start().then(() => {
+      if (!akis[userId]) {
+        akis[userId] = new Aki('en');
+      }
+      return akis[userId].start().then(() => {
         return client.replyMessage(replyToken, [
           {
             type: 'text',
@@ -129,8 +133,8 @@ function handleText(message, replyToken, source) {
           },
           {
             type: 'text',
-            text: `Question ${aki.currentStep + 1}:\n${
-              `${aki.question}` || 'Akinator went wrong...'
+            text: `Question ${akis[userId].currentStep + 1}:\n${
+              `${akis[userId].question}` || 'Akinator went wrong...'
             }`,
           },
           optionObj,
@@ -141,28 +145,49 @@ function handleText(message, replyToken, source) {
         ]);
       });
 
+    case 'back':
+      if (!akis[userId]?.gameStarted) {
+        return replyText(replyToken, 'Please start the game first.');
+      }
+
+      return akis[userId].back().then(() =>
+        client.replyMessage(replyToken, [
+          {
+            type: 'text',
+            text: `(Back) Question ${akis[userId].currentStep + 1}:\n${
+              `${akis[userId].question}` || 'Akinator went wrong...'
+            }`,
+          },
+          optionObj,
+          {
+            type: 'text',
+            text: 'Or type `back` to back to previous question.',
+          },
+        ]),
+      );
+
     case 'Yes':
     case 'No':
     case "Don't know":
     case 'Probably':
     case 'Probably not':
-      if (!aki.gameStarted || aki.gameEnded) {
+      if (!akis[userId]?.gameStarted) {
         return replyText(
           replyToken,
           'Please type `start` to start the game first.',
         );
       }
-      if (aki.gameEnded) {
+      if (akis[userId].gameEnded) {
         return replyText(
           replyToken,
           'Game ended. Please type `start` again to start a new game!',
         );
       }
 
-      return aki.step(optionToNum[message.text]).then(() => {
-        if (aki.progress >= 80 || aki.currentStep >= 50) {
-          return aki.win().then(() => {
-            const answer = aki.answers[0];
+      return akis[userId].step(optionToNum[message.text]).then(() => {
+        if (akis[userId].progress >= 80 || akis[userId].currentStep >= 50) {
+          return akis[userId].win().then(() => {
+            const answer = akis[userId].answers[0];
             return client.replyMessage(replyToken, [
               {
                 type: 'text',
@@ -188,8 +213,8 @@ function handleText(message, replyToken, source) {
         return client.replyMessage(replyToken, [
           {
             type: 'text',
-            text: `Question ${aki.currentStep + 1}:\n${
-              `${aki.question}` || 'Akinator went wrong...'
+            text: `Question ${akis[userId].currentStep + 1}:\n${
+              `${akis[userId].question}` || 'Akinator went wrong...'
             }`,
           },
           optionObj,
@@ -199,27 +224,6 @@ function handleText(message, replyToken, source) {
           },
         ]);
       });
-
-    case 'back':
-      if (!aki.gameStarted) {
-        return replyText(replyToken, 'Please start the game first.');
-      }
-
-      return aki.back().then(() =>
-        client.replyMessage(replyToken, [
-          {
-            type: 'text',
-            text: `(Back) Question ${aki.currentStep + 1}:\n${
-              `${aki.question}` || 'Akinator went wrong...'
-            }`,
-          },
-          optionObj,
-          {
-            type: 'text',
-            text: 'Or type `back` to back to previous question.',
-          },
-        ]),
-      );
 
     case 'bye':
       switch (source.type) {
@@ -238,8 +242,8 @@ function handleText(message, replyToken, source) {
       }
 
     default:
-      if (aki.gameStarted) {
-        return replyText(replyToken, 'Tap on your option!');
+      if (akis[userId]?.gameStarted) {
+        return replyText(replyToken, 'Please tap on the options.');
       }
       return replyText(replyToken, 'Type `start` to start the game.');
   }
