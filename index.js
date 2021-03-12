@@ -76,7 +76,10 @@ function handleEvent(event) {
       }
 
     case 'follow':
-      return replyText(replyToken, 'Challenge me. I will read your mind.');
+      return replyText(replyToken, [
+        'Challenge me. I will read your mind.',
+        'Type `start` to start the game.',
+      ]);
 
     case 'unfollow':
       return console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
@@ -127,7 +130,7 @@ function handleText(message, replyToken, source) {
           {
             type: 'text',
             text: `Question ${aki.currentStep + 1}:\n${
-              `*${aki.question}*` || 'Akinator has no question to you.'
+              `${aki.question}` || 'Akinator went wrong...'
             }`,
           },
           optionObj,
@@ -143,11 +146,17 @@ function handleText(message, replyToken, source) {
     case "Don't know":
     case 'Probably':
     case 'Probably not':
-      if (!aki.gameStarted) {
-        return replyText(replyToken, 'Please start the game first.');
+      if (!aki.gameStarted || aki.gameEnded) {
+        return replyText(
+          replyToken,
+          'Please type `start` to start the game first.',
+        );
       }
       if (aki.gameEnded) {
-        return replyText(replyToken, 'Type `start` again to start a new game.');
+        return replyText(
+          replyToken,
+          'Game ended. Please type `start` again to start a new game!',
+        );
       }
 
       return aki.step(optionToNum[message.text]).then(() => {
@@ -180,7 +189,7 @@ function handleText(message, replyToken, source) {
           {
             type: 'text',
             text: `Question ${aki.currentStep + 1}:\n${
-              `*${aki.question}*` || 'Akinator has no question to you.'
+              `${aki.question}` || 'Akinator went wrong...'
             }`,
           },
           optionObj,
@@ -201,7 +210,7 @@ function handleText(message, replyToken, source) {
           {
             type: 'text',
             text: `(Back) Question ${aki.currentStep + 1}:\n${
-              `*${aki.question}*` || 'Akinator has no question to you.'
+              `${aki.question}` || 'Akinator went wrong...'
             }`,
           },
           optionObj,
@@ -230,7 +239,7 @@ function handleText(message, replyToken, source) {
 
     default:
       if (aki.gameStarted) {
-        return replyText(replyToken, 'Akinator is asking!');
+        return replyText(replyToken, 'Tap on your option!');
       }
       return replyText(replyToken, 'Type `start` to start the game.');
   }
