@@ -115,10 +115,15 @@ function handleText(message, replyToken, source) {
     }),
   };
 
-  switch (message.text) {
+  switch (message.text.trim()) {
     case 'start':
       return aki.start().then(() => {
         return client.replyMessage(replyToken, [
+          {
+            type: 'text',
+            text:
+              'Think about a real or fictional character.\nI will try to guess who it is.',
+          },
           {
             type: 'text',
             text: `Question ${aki.currentStep + 1}:\n${
@@ -195,7 +200,7 @@ function handleText(message, replyToken, source) {
         client.replyMessage(replyToken, [
           {
             type: 'text',
-            text: `Question ${aki.currentStep + 1}:\n${
+            text: `(Back) Question ${aki.currentStep + 1}:\n${
               `*${aki.question}*` || 'Akinator has no question to you.'
             }`,
           },
