@@ -4,7 +4,7 @@
 
 This is an **unofficial Akinator LINE BOT**.
 
-Channel ID: [@360iwgeb](https://line.me/R/ti/p/@360iwge)
+Channel ID: [@360iwgeb](https://line.me/R/ti/p/@360iwgeb)
 
 Channel QR code:
 
