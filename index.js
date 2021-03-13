@@ -164,7 +164,7 @@ function handleText(message, replyToken, source) {
     case 'back':
       if (akis[userId] && !akis[userId].gameStarted) {
         return replyText(replyToken, 'Please start the game first.');
-      } else if (akis[userId].currentStep) {
+      } else if (akis[userId].currentStep === 0) {
         return replyText(replyToken, 'This is the first question already.');
       }
 
