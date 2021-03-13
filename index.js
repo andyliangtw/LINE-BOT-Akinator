@@ -119,7 +119,7 @@ function handleText(message, replyToken, source) {
     }),
   };
 
-  switch (message.text.trim()) {
+  switch (message.text.trim().toLocaleLowerCase()) {
     case 'start':
       if (!akis[userId]) {
         try {
@@ -189,11 +189,11 @@ function handleText(message, replyToken, source) {
           );
         });
 
-    case 'Yes':
-    case 'No':
-    case "Don't know":
-    case 'Probably':
-    case 'Probably not':
+    case 'yes':
+    case 'no':
+    case "don't know":
+    case 'probably':
+    case 'probably not':
       if (!akis[userId]?.gameStarted) {
         return replyText(
           replyToken,
