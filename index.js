@@ -131,6 +131,7 @@ function handleText(message, replyToken, source) {
           );
         }
       }
+
       return akis[userId]
         .start()
         .then(() => {
@@ -161,8 +162,10 @@ function handleText(message, replyToken, source) {
         });
 
     case 'back':
-      if (!akis[userId]?.gameStarted) {
+      if (akis[userId] && !akis[userId].gameStarted) {
         return replyText(replyToken, 'Please start the game first.');
+      } else if (akis[userId].currentStep) {
+        return replyText(replyToken, 'This is the first question already.');
       }
 
       return akis[userId]
@@ -194,13 +197,12 @@ function handleText(message, replyToken, source) {
     case "don't know":
     case 'probably':
     case 'probably not':
-      if (!akis[userId]?.gameStarted) {
+      if (akis[userId] && !akis[userId].gameStarted) {
         return replyText(
           replyToken,
           'Please type `start` to start the game first.',
         );
-      }
-      if (akis[userId].gameEnded) {
+      } else if (akis[userId].gameEnded) {
         return replyText(
           replyToken,
           'Game ended. Please type `start` again to start a new game!',
@@ -283,7 +285,7 @@ function handleText(message, replyToken, source) {
       }
 
     default:
-      if (akis[userId]?.gameStarted) {
+      if (akis[userId] && akis[userId].gameStarted) {
         return replyText(replyToken, 'Please tap on the options.');
       }
       return replyText(replyToken, 'Type `start` to start the game.');
